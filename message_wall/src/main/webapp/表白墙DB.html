@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表白墙</title>
+</head>
+<body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            
+        }
+        html {
+            height: 100%;
+
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-image: url(./表白墙.png);
+            background-size: cover;
+        }
+        .container ,html{
+            width: 100%;
+            opacity: 82%;
+            
+        }
+        h3 {
+            text-align: center;
+            padding: 30px 0;
+            font-size: 24px;
+            color: black;
+        }
+        p {
+            text-align: center;
+            color: aliceblue;
+            padding: 5px 0;
+        }
+        .row {
+            width: 400px;
+            height: 50px;
+            margin: 0 auto;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .row span{
+            width: 100px;
+            height: 40px;
+            text-align:center;
+            padding-right: 0px;
+
+            font-size: 24px;
+            color:  white;
+        }
+        .row input{
+            width: 300px;
+            height: 40px;
+            border: 2px solid  rgb(100,180,255);
+            border-radius: 5px;
+            outline: 0;
+            text-align: left;
+            padding-left: 0px;
+            margin-left: 0px;
+            text-indent: 0.4em;
+            font-size: 20px;
+
+            color: rgb(255, 150, 180)
+        }
+        .row #submit{
+            width: 200px;
+            height: 40px;
+            border-radius: 10px;
+            font-size: 24px;
+            border: 0px solid  rgb(255, 140, 160);
+            background-color:  rgb(140,160,255);
+            color:  aliceblue;
+            line-height: 40px;
+            margin-top: 8px;
+        }
+        .row #submit:active{
+            background-color: rgb(255, 140, 160);
+        }
+        .oh {
+            width: 100%;
+            height: 30px;
+            margin-top: 8px;
+
+            font-size: 16px;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+        }
+    </style>
+    <div class="container">
+        <h3>"真的是"表白墙</h3>
+        <p>输入后点击提交, 会将信息显示在表白按钮下方</p>
+        <p>这是一个正经的表白墙，这真的不是一个表白墙</p>
+        <p></p>
+        <div class="row">
+            <span>是谁:</span>
+            <input type="text" value placeholder="大白">
+        </div>
+        <div class="row">
+            <span>向谁:</span>
+            <input type="text" value placeholder="小白">
+        </div>
+        <div class="row">
+            <span>说:</span>
+            <input type="text" value placeholder="你好">
+        </div>
+        <div class="row">
+            <button id="submit">表白</button>
+        </div>
+    </div>
+
+    <script src="./jquery3.6.0.js"></script>
+    <script>
+        //获取元素
+        let loveBtn = document.querySelector("#submit");
+
+        let adv = ["深情地", "温柔地", "随便地", "紧张地", "幽默地", "滑稽地", "开心地", ""];
+        //用户点击表白将表白记录显示在表白按钮下面
+        let record = [];
+        let i = 0;
+        getMessages();
+        loveBtn.onclick = function() {
+            //1.获取表白内容
+            let inputs = document.querySelectorAll("input");
+            let from = inputs[0].value;
+            let to = inputs[1].value;
+            let message = inputs[2].value;
+            //2.如果有一项内天为空，不处理
+            if (from == '' || to == '' || message == '') {
+                return;
+            }
+            //3.汇总表白语言
+            let n = adv.length;
+            let index = (Math.floor(Math.random() * 1000) + 1) % n;
+            let romAdv = adv[index];
+            let loveMess = from + romAdv + "对" + to + "说" + message;
+            record[i] = "留言" + (i+1) + ":" + loveMess;
+            //4.新建结点，插入表白记录
+            let div = document.createElement("div");
+            div.innerHTML = record[i];
+            div.className = 'oh';
+            let container = document.querySelector(".container");
+            container.appendChild(div);
+            i++;
+            //5.表白完，清空输入框
+            for (let j = 0; j < inputs.length; j++) {
+                inputs[j].value = '';
+            }
+            //6.构造ajax请求
+            let body = {
+                from: from,
+                to: to,
+                message: message,
+                //随机词
+                romAdv: adv[index]
+            }
+            $.ajax({
+                type: "post",
+                url:"messageDB",
+                contentType:"application/json; charset=utf8",
+                data:JSON.stringify(body),
+                success:function(body){
+                    alert("表白成功！");
+                },
+                error:function() {
+                    alert("表白失败！");
+                }
+            });
+        }
+        function getMessages() {
+            $.ajax({
+                type: "get",
+                url: "messageDB",
+                success: function(body) {
+                    let container = document.querySelector(".container");
+                    for (message of body) {
+                        let loveMess = message.from + message.romAdv + "对" + message.to + "说" + message.message;
+                        record[i] = "留言" + (i+1) + ":" + loveMess;
+                        let div = document.createElement("div");
+                        div.innerHTML = record[i];
+                        div.className = 'oh';
+                        container.appendChild(div);
+                        i++;
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
